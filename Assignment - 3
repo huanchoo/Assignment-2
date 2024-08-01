@@ -1,0 +1,139 @@
+# Brito, Juan, 22102796
+
+from collections import namedtuple
+
+
+def student_manager():
+    """
+    Manages a roster of students in the CS department, allowing the user to add, delete,
+    search, sort, and calculate averages of student records.
+    """
+    Student = namedtuple('Student', ['first_name', 'last_name', 'gpa', 'passed_units'])
+    student_roster = []
+
+    def add_student(arguments):
+        """
+        Adds a new student to the student_roster.
+        """
+        try:
+            first_name, last_name, gpa, passed_units = arguments.split(',')
+            gpa = float(gpa)
+            passed_units = int(passed_units)
+            if not (0 <= gpa <= 4) or not (0 <= passed_units <= 100):
+                print("Error: Invalid GPA or passed units value.")
+                return
+            student_roster.append(Student(first_name.strip(), last_name.strip(), gpa, passed_units))
+            print(f"Student {first_name.strip()} {last_name.strip()} added.")
+        except ValueError:
+            print("Error: Invalid input format for add_student. Use format: add_student first_name,last_name,gpa,passed_units")
+
+    def print_roster():
+        """
+        Prints the current list of students in the student_roster.
+        """
+        for student in student_roster:
+            print(f"{student.first_name},{student.last_name},{student.gpa},{student.passed_units}")
+
+    def delete_student(arguments):
+        """
+        Deletes a student from the student_roster by first and last name.
+        """
+        try:
+            first_name, last_name = arguments.split(',')
+            first_name = first_name.strip()
+            last_name = last_name.strip()
+            for i, student in enumerate(student_roster):
+                if student.first_name == first_name and student.last_name == last_name:
+                    del student_roster[i]
+                    print(f"Student {first_name} {last_name} deleted.")
+                    return
+            print(f"Error: Student {first_name} {last_name} not found.")
+        except ValueError:
+            print("Error: Invalid input format for delete_student. Use format: delete_student first_name,last_name")
+
+    def sort_roster(attribute):
+        """
+        Sorts the student_roster based on the given attribute.
+        """
+        if attribute.strip().lower() == "name":
+            student_roster.sort(key=lambda s: (s.first_name.lower(), s.last_name.lower()))
+        elif attribute.strip().lower() == "gpa":
+            student_roster.sort(key=lambda s: s.gpa, reverse=True)
+        elif attribute.strip().lower() == "units":
+            student_roster.sort(key=lambda s: s.passed_units, reverse=True)
+        else:
+            print("Error: Invalid argument for sort_roster. Use 'name', 'gpa', or 'units'.")
+            return
+        print_roster()
+
+    def find_by_fname(first_name):
+        """
+        Finds and prints all students with the given first name.
+        """
+        first_name = first_name.strip()
+        found = False
+        for student in student_roster:
+            if student.first_name.lower() == first_name.lower():
+                print(f"{student.first_name},{student.last_name},{student.gpa},{student.passed_units}")
+                found = True
+        if not found:
+            print(f"Error: No student found with first name {first_name}.")
+
+    def find_by_lname(last_name):
+        """
+        Finds and prints all students with the given last name.
+        """
+        last_name = last_name.strip()
+        found = False
+        for student in student_roster:
+            if student.last_name.lower() == last_name.lower():
+                print(f"{student.first_name},{student.last_name},{student.gpa},{student.passed_units}")
+                found = True
+        if not found:
+            print(f"Error: No student found with last name {last_name}.")
+
+    def get_average(attribute):
+        """
+        Calculates and prints the average GPA or passed units of students in the student_roster.
+        """
+        if attribute.strip().lower() == "gpa":
+            total_units = sum(student.passed_units for student in student_roster)
+            if total_units == 0:
+                print("Error: No units to calculate average GPA.")
+                return
+            weighted_gpa = sum(student.gpa * student.passed_units for student in student_roster)
+            average_gpa = weighted_gpa / total_units
+            print(f"Average GPA: {average_gpa:.2f}")
+        elif attribute.strip().lower() == "units":
+            if not student_roster:
+                print("Error: No students to calculate average units.")
+                return
+            average_units = sum(student.passed_units for student in student_roster) / len(student_roster)
+            print(f"Average Passed Units: {average_units:.2f}")
+        else:
+            print("Error: Invalid argument for get_average. Use 'gpa' or 'units'.")
+
+    commands = {
+        "add_student": add_student,
+        "print_roster": print_roster,
+        "delete_student": delete_student,
+        "sort_roster": sort_roster,
+        "find_by_fname": find_by_fname,
+        "find_by_lname": find_by_lname,
+        "get_average": get_average,
+        "quit": lambda _: exit()
+    }
+
+    while True:
+        try:
+            user_input = input("$ ").strip().lower()
+            if not user_input:
+                continue
+            command, *arguments = user_input.split(' ', 1)
+            arguments = arguments[0] if arguments else ""
+            if command in commands:
+                commands[command](arguments)
+            else:
+                print("Error: Unknown command.")
+        except Exception as e:
+            print(f"Error: {e}")
